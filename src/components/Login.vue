@@ -7,12 +7,19 @@
         </div>
         <!-- 表单区 -->
         <div>
-          <el-input v-model="username" placeholder="请输入内容" class='username' prefix-icon="icon-user"></el-input>
-          <el-input placeholder="请输入密码" v-model="password" show-password prefix-icon="icon-lock"></el-input>
-          <div class="btns">
-            <el-button type="primary">登录</el-button>
-            <el-button type="info">重置</el-button>
-          </div>
+          <el-form ref="formRef" :model="formItems" :rules="loginRules" label-width="">
+            <el-form-item prop="username">
+              <el-input v-model="formItems.username" placeholder="请输入内容" class='username' prefix-icon="icon-user"></el-input>
+            </el-form-item>
+            <el-form-item prop="password">
+              <el-input placeholder="请输入密码" v-model="formItems.password" show-password prefix-icon="icon-lock"></el-input>
+            </el-form-item>  
+              
+            <el-form-item class="btns">
+              <el-button type="primary" @click="toLogin">登录</el-button>
+              <el-button type="info" @click="reset">重置</el-button>
+            </el-form-item>
+          </el-form>
         </div>
       </div>
   </div>
@@ -23,8 +30,42 @@
 export default {
   data(){
     return {
-      username: '',
-      password:''
+      formItems: {
+        username: '',
+        password:''
+      },
+      loginRules: {
+        username: [
+          { required: true, message: "请输入用户名", trigger: 'blur'},
+          { min: 3, max: 15, message: "长度在3~15个字符", trigger: 'blur'}
+        ],
+        password: [
+          { required: true, message: "请输入密码", trigger: 'blur'},
+          { min: 3, max: 15, message: "长度在3~15个字符", trigger: 'blur'}
+        ]
+      }
+    }
+  },
+  methods: {
+    toLogin(){
+      this.$refs.formRef.validate((valid)=>{
+        if(!valid) return
+        this.axios.post('/v1/login',{
+          mobile:this.formItems.username,
+          pass:this.formItems.password,
+        }).then((res)=>{
+          this.$message({
+            message: '恭喜你，登录成功',
+            type: 'success'
+          });
+          window.localStorage.setItem('token',res.data.token);
+        }).catch(()=>{
+          this.$message.error('登录失败');
+        })
+      })
+    },
+    reset(){
+      console.log(this.$refs.formRef.resetFields())
     }
   }
 }
@@ -53,7 +94,7 @@ export default {
     }
   } 
 .el-input {
-  margin: 10px 0 0 20px;
+  margin: 10px 0 0 0;
   width: 420px;
 
 }
@@ -64,5 +105,8 @@ export default {
   right: 10px;
 }
 
+.el-form  {
+  margin-left: 20px;
+}
+</style>
 
-</style>>
