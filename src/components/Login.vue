@@ -58,7 +58,8 @@ export default {
             message: '恭喜你，登录成功',
             type: 'success'
           });
-          window.localStorage.setItem('token',res.data.token);
+          window.localStorage.setItem('token',res.data.token);//注意操作顺序，先存储token再跳转，否则路由守卫报错
+          this.$router.push('/home')
         }).catch(()=>{
           this.$message.error('登录失败');
         })
