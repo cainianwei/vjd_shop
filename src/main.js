@@ -8,6 +8,16 @@ import '@/plugins/element.js'
 Vue.config.productionTip = false
 
 import Axios from 'axios'
+
+// Axios.defaults.baseURL = 'http://127.0.0.1:8888/api/private/v1/'
+
+Axios.interceptors.request.use((config)=>{
+  config.headers.token = window.localStorage.getItem('token')
+  // 在最后必须 return config
+  return config
+
+})
+
 Vue.prototype.axios = Axios //挂载插件，通过挂载来进行this指向
 
 new Vue({
