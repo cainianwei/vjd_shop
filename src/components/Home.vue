@@ -9,8 +9,10 @@
             </div>
         </el-header>
         <el-container>
-            <el-aside width="200px">
-                <el-menu background-color="#333744" text-color="#fff" active-text-color="#409EFF" unique-opened >
+            <!-- 侧边栏 -->
+            <el-aside :width="isCollapse ? '64px' : '200px'">
+                <div class="toggle-button" @click="setCollapse">|||</div>
+                <el-menu background-color="#333744" text-color="#fff" active-text-color="#409EFF" unique-opened :collapse="isCollapse" >
                     <el-submenu :index="items.id+''" v-for="items in menuList" :key="items.id">
                         <template slot="title"><i :class="iconsObj[items.id]"></i>{{items.title}}</template>
                         <!-- <el-menu-item-group  v-for="chilItems in items.child" :key="chilItems.id">
@@ -28,9 +30,12 @@
                     </el-submenu>
                 </el-menu>
             </el-aside>
+            
             <el-container>
-            <el-main>Main</el-main>
-            <el-footer>Footer</el-footer>
+                <!-- 内容区 -->
+                <el-main>Main</el-main>
+                <!-- 底部导航 -->
+                <el-footer>Footer</el-footer>
             </el-container>
         </el-container>
     </el-container>
@@ -48,10 +53,13 @@ export default {
                 '280': 'iconfont icon-home3',
                 '285': 'iconfont icon-stats-bars2',
             },
+            isCollapse: false,
+            setTransition: false,
         }
     },
     created(){//权限拦截需要在页面刷新之前进行，所以这里不能用mounted
         this.getMenuList()
+
     },
     methods: {
         loginOut(){
@@ -62,8 +70,10 @@ export default {
             this.axios.post('/v1/getRole').then((res)=>{
                 if(res.data.errorCode!==10000) return this.$message.error(res.data.msg)
                 this.menuList=res.data.rows
-                console.log(this.menuList)
             })
+        },
+        setCollapse(){
+            this.isCollapse = !this.isCollapse;
         }
     }
 }
@@ -85,6 +95,7 @@ export default {
 
 .el-menu {
     text-color: #fff;
+    border: none;
 }
 
 .el-button {
@@ -95,6 +106,16 @@ export default {
 
 .iconfont {
   margin-right: 5px;
+}
+
+.toggle-button {
+    background: #333744;
+    color: #fff;
+    text-align: center;
+    font-size: 10px;
+    line-height: 24px;
+    letter-spacing: 0.2em; /*设置文字的间距*/
+    
 }
 
 </style>
