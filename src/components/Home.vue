@@ -10,13 +10,21 @@
         </el-header>
         <el-container>
             <el-aside width="200px">
-                <el-menu background-color="#333744" text-color="#fff" active-text-color="#409EFF" >
-                    <el-submenu index="1">
-                        <template slot="title"><i class="el-icon-message"></i>导航一</template>
-                        <el-menu-item-group>
-                        <el-menu-item index="1-1">选项1</el-menu-item>
-                        </el-menu-item-group>
-                        
+                <el-menu background-color="#333744" text-color="#fff" active-text-color="#409EFF" unique-opened >
+                    <el-submenu :index="items.id+''" v-for="items in menuList" :key="items.id">
+                        <template slot="title"><i :class="iconsObj[items.id]"></i>{{items.title}}</template>
+                        <!-- <el-menu-item-group  v-for="chilItems in items.child" :key="chilItems.id">
+                        <el-menu-item :index="chilItems.id+''">{{chilItems.title}}</el-menu-item>
+                        </el-menu-item-group> -->
+                        <el-menu-item :index="chilItems.id+''" v-for="chilItems in items.child" :key="chilItems.id" >
+                            <template slot="title">
+                                <!-- 图标 -->
+                                <i class="el-icon-menu"></i>
+                                <!-- 文本 -->
+                                <span>{{chilItems.title}}</span>
+                            </template>
+                        </el-menu-item>
+
                     </el-submenu>
                 </el-menu>
             </el-aside>
@@ -31,10 +39,31 @@
 
 <script>
 export default {
+    data(){
+        return {
+            menuList: [],
+            iconsObj: {
+                '68': 'iconfont icon-users',
+                '253': 'iconfont icon-user-check',
+                '280': 'iconfont icon-home3',
+                '285': 'iconfont icon-stats-bars2',
+            },
+        }
+    },
+    created(){//权限拦截需要在页面刷新之前进行，所以这里不能用mounted
+        this.getMenuList()
+    },
     methods: {
         loginOut(){
             window.localStorage.removeItem('token')
             this.$router.push('/login')
+        },
+        getMenuList(){
+            this.axios.post('/v1/getRole').then((res)=>{
+                if(res.data.errorCode!==10000) return this.$message.error(res.data.msg)
+                this.menuList=res.data.rows
+                console.log(this.menuList)
+            })
         }
     }
 }
@@ -62,6 +91,10 @@ export default {
     float: right;
     margin: 10px 10px 0px;
     
+}
+
+.iconfont {
+  margin-right: 5px;
 }
 
 </style>

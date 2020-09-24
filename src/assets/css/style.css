@@ -25,21 +25,21 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-.icon-cart:before {
-  content: "\e93a";
-}
-.icon-location:before {
-  content: "\e947";
+.icon-home3:before {
+  content: "\e902";
 }
 .icon-user:before {
   content: "\e971";
 }
-.icon-search:before {
-  content: "\e986";
+.icon-users:before {
+  content: "\e972";
+}
+.icon-user-check:before {
+  content: "\e975";
 }
 .icon-lock:before {
   content: "\e98f";
 }
-.icon-ctrl:before {
-  content: "\ea50";
+.icon-stats-bars2:before {
+  content: "\e99d";
 }
