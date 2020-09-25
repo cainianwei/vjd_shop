@@ -12,13 +12,14 @@
             <!-- 侧边栏 -->
             <el-aside :width="isCollapse ? '64px' : '200px'">
                 <div class="toggle-button" @click="setCollapse">|||</div>
-                <el-menu background-color="#333744" text-color="#fff" active-text-color="#409EFF" unique-opened :collapse="isCollapse" >
+                <el-menu background-color="#333744" text-color="#fff" active-text-color="#409EFF" unique-opened :collapse="isCollapse" router :default-active="activeStatus">
                     <el-submenu :index="items.id+''" v-for="items in menuList" :key="items.id">
                         <template slot="title"><i :class="iconsObj[items.id]"></i>{{items.title}}</template>
                         <!-- <el-menu-item-group  v-for="chilItems in items.child" :key="chilItems.id">
                         <el-menu-item :index="chilItems.id+''">{{chilItems.title}}</el-menu-item>
                         </el-menu-item-group> -->
-                        <el-menu-item :index="chilItems.id+''" v-for="chilItems in items.child" :key="chilItems.id" >
+                        <el-menu-item :index="chilItems.path+''" v-for="chilItems in items.child" :key="chilItems.id" @click="saveNavState(chilItems.path)">
+                            
                             <template slot="title">
                                 <!-- 图标 -->
                                 <i class="el-icon-menu"></i>
@@ -33,7 +34,10 @@
             
             <el-container>
                 <!-- 内容区 -->
-                <el-main>Main</el-main>
+                <el-main>
+                    <!-- 路由占位符 -->
+                    <router-view></router-view>
+                </el-main>
                 <!-- 底部导航 -->
                 <el-footer>Footer</el-footer>
             </el-container>
@@ -55,11 +59,12 @@ export default {
             },
             isCollapse: false,
             setTransition: false,
+            activeStatus: '',
         }
     },
     created(){//权限拦截需要在页面刷新之前进行，所以这里不能用mounted
         this.getMenuList()
-
+        this.activeStatus=window.sessionStorage.getItem('activePath')
     },
     methods: {
         loginOut(){
@@ -74,6 +79,10 @@ export default {
         },
         setCollapse(){
             this.isCollapse = !this.isCollapse;
+        },
+        saveNavState(activeStatus){
+            window.sessionStorage.setItem('activePath',activeStatus)
+            this.activeStatus=activeStatus
         }
     }
 }

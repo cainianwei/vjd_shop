@@ -1,0 +1,91 @@
+<template>
+  <div>
+    <!-- 面包屑 -->
+    <el-breadcrumb separator-class="el-icon-arrow-right">
+      <el-breadcrumb-item :to="{ path: '/home' }">首页</el-breadcrumb-item>
+      <el-breadcrumb-item>用户</el-breadcrumb-item>
+      <el-breadcrumb-item>层级关系</el-breadcrumb-item>
+  </el-breadcrumb>
+
+<!-- 卡片 -->
+  <el-card class="box-card">
+    <el-row :gutter="20"> <!--gutter 设置间距-->
+      <el-col :span="7">
+        <el-input placeholder="请输入内容" class="input-with-select">
+          <el-button slot="append" icon="el-icon-search"></el-button>
+        </el-input>
+      </el-col>
+      <el-col :span="4">
+        <el-button type="primary">
+          添加用户
+        </el-button>
+      </el-col>
+    </el-row>
+    
+    <!-- 表格 -->
+    <el-table
+      :data="dataList"
+      stripe
+      border
+      style="width: 100%">
+      <el-table-column
+        prop="id"
+        label="ID"
+        >
+      </el-table-column>
+      <el-table-column
+        prop="remark"
+        label="备注"
+        >
+      </el-table-column>
+      <el-table-column
+        prop="percent"
+        label="比例">
+      </el-table-column>
+      <el-table-column
+        prop="percent"
+        label="状态">
+      </el-table-column>
+      <el-table-column
+        label="操作">
+      </el-table-column>
+    </el-table>
+  </el-card>
+  </div>
+</template>
+
+<script>
+export default {
+  data(){
+    return {
+      queryInfo: {
+        token: 'c3a6c0a8fe098e2f90d2332001b469d4',
+        limit: 2,
+        skip: 0
+      },
+      dataList: [],
+      total: 0
+    }
+  },
+  created(){
+    this.getUserList()
+  },
+  methods: {
+    async getUserList(){
+      const { data: res }= await this.axios.post('/v1/userTrade',this.queryInfo)
+      if(res.errorCode!==1000) return this.$message.error('获取失败')
+      this.dataList=res.rows
+      this.total=res.count
+    }
+  }
+}
+</script>
+
+<style lang="less" scoped>
+
+.box-card {
+  width: 100%;
+  box-shadow: 0 1px 1px #ccc !important;
+}
+
+</style>

@@ -1,5 +1,25 @@
 import Vue from 'vue';
-import { Button,Input,Form,FormItem,Message,Container,Header,Aside,Main,Footer,Menu,Submenu,MenuItemGroup,menuItem } from 'element-ui';
+import { Button,
+        Input,
+        Form,
+        FormItem,
+        Message,
+        Container,
+        Header,
+        Aside,
+        Main,
+        Footer,
+        Menu,
+        Submenu,
+        MenuItemGroup,
+        menuItem,
+        Breadcrumb,
+        BreadcrumbItem,
+        Card,
+        Row,
+        Col,
+        Table,
+        TableColumn, } from 'element-ui';
 
 Vue.use(Button)
 Vue.use(Input)
@@ -13,8 +33,14 @@ Vue.use(Main)
 Vue.use(Footer)
 Vue.use(Menu)
 Vue.use(Submenu)
-
 Vue.use(MenuItemGroup)
 Vue.use(menuItem)
+Vue.use(Breadcrumb)
+Vue.use(BreadcrumbItem)
+Vue.use(Card)
+Vue.use(Row)
+Vue.use(Col)
+Vue.use(Table)
+Vue.use(TableColumn)
 
 Vue.prototype.$message=Message;
