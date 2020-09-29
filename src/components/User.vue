@@ -11,8 +11,8 @@
   <el-card class="box-card">
     <el-row :gutter="20"> <!--gutter 设置间距-->
       <el-col :span="7">
-        <el-input placeholder="请输入内容" class="input-with-select">
-          <el-button slot="append" icon="el-icon-search"></el-button>
+        <el-input placeholder="请输入内容" v-model="queryInfo.query" class="input-with-select" clearable @clear="getUserList">   <!--@clear element-ui 事件，清除搜索框执行什么操作-->
+          <el-button slot="append" icon="el-icon-search" @click="getUserList"></el-button>
         </el-input>
       </el-col>
       <el-col :span="4">
@@ -34,29 +34,32 @@
         >
       </el-table-column>
       <el-table-column
-        prop="remark"
-        label="备注"
+        prop="mobile"
+        label="手机号"
         >
       </el-table-column>
       <el-table-column
-        label="比例">
+        prop="pinvite"
+        label="邀请码">
       </el-table-column>
       <el-table-column label="状态">
          <template slot-scope=" scope ">    <!-- 通过插槽作用域获取子组件的数据，主组件饮用子组件并能够将标签插入子组件说明子组件具有插槽功能-->
-          <el-switch v-model="scope.row.percent" @change="userStateChanged(scope.row)">
+          <el-switch v-model="scope.row.is_vip" @change="userStateChanged(scope.row)">
             
           </el-switch>
         </template>
       </el-table-column>
       <el-table-column label="操作">
-          <!-- 修改按钮 -->
-          <el-button type="primary" icon="el-icon-edit" size="mini"></el-button>
-          <!-- 删除按钮 -->
-          <el-button type="danger" icon="el-icon-delete" size="mini"></el-button>
+          <template slot-scope=" scope ">
+              <!-- 修改按钮 -->
+            <el-button type="primary" icon="el-icon-edit" size="mini" @click="editUserShow(scope.row.token)"></el-button>
+            <!-- 删除按钮 -->
+            <el-button type="danger" icon="el-icon-delete" size="mini"></el-button>
 
-          <el-tooltip effect="dark" content="分配角色" placement="top" :enterable="false">
-            <el-button type="warning" icon="el-icon-setting" size="mini"></el-button>
-          </el-tooltip>
+            <el-tooltip effect="dark" content="分配角色" placement="top" :enterable="false">
+              <el-button type="warning" icon="el-icon-setting" size="mini"></el-button>
+            </el-tooltip>
+          </template>
           
       </el-table-column>
     </el-table>
@@ -66,7 +69,7 @@
       @size-change="handleSizeChange"
       @current-change="handleCurrentChange"
       :current-page="currentPage"
-      :page-sizes="[1, 2, 3, 4]"
+      :page-sizes="[10, 20, 30, 40]"
       :page-size="queryInfo.limit"
       layout="total, sizes, prev, pager, next, jumper"
       :total="total">
@@ -75,27 +78,48 @@
   </el-card>
 
   <!-- 新增添加用户对话框 -->
-  <el-dialog title="新增用户" :visible.sync="dialogVisible" width="30%" >
+  <el-dialog title="新增用户" :visible.sync="dialogVisible" width="30%" @close="resetField">    <!--close  为element-ui内置函数-->
       <span>
         <el-form :model="addForm" :rules="addFormRules" ref="addFormRef" label-width="100px" >
           <el-form-item label="用户名" prop="username">
           <el-input v-model="addForm.username"></el-input>
-        </el-form-item>
-        <el-form-item label="密码" prop="password">
-          <el-input v-model="addForm.password"></el-input>
-        </el-form-item>
-        <el-form-item label="邮箱" prop="email">
-          <el-input v-model="addForm.email"></el-input>
-        </el-form-item>
-        <el-form-item label="手机" prop="mobile">
-          <el-input v-model="addForm.mobile"></el-input>
-        </el-form-item>
+          </el-form-item>
+          <el-form-item label="密码" prop="password">
+            <el-input v-model="addForm.password"></el-input>
+          </el-form-item>
+          <el-form-item label="邮箱" prop="email">
+            <el-input v-model="addForm.email"></el-input>
+          </el-form-item>
+          <el-form-item label="手机" prop="mobile">
+            <el-input v-model="addForm.mobile"></el-input>
+          </el-form-item>
         </el-form>
       </span>
       <span slot="footer" class="dialog-footer">
-          <el-button @click=" dialogVisible = false ">取 消</el-button>
-          <el-button type="primary" @click=" dialogVisible = false">确 定</el-button>
+          <el-button @click=" dialogVisible = false " >取 消</el-button>
+          <el-button type="primary" @click=" addUser">确 定</el-button>
       </span>
+  </el-dialog>
+
+<!-- 编辑用户对话框 -->
+  <el-dialog title="编辑用户" :visible.sync="editDialogVisible" width="30%" >
+    <span>
+      <el-form :model="editForm" :rules="editFormRules" ref="editFormRef" label-width="100px" >
+        <el-form-item label="用户名" >
+          <el-input v-model="editForm.username" disabled></el-input>
+        </el-form-item>
+        <el-form-item label="邮箱" prop="email">
+          <el-input v-model="editForm.email"></el-input>
+        </el-form-item>
+        <el-form-item label="手机" prop="mobile">
+          <el-input v-model="editForm.mobile"></el-input>
+        </el-form-item>
+      </el-form>
+    </span>
+    <span slot="footer" class="dialog-footer">
+      <el-button @click="editDialogVisible = false">取 消</el-button>
+      <el-button type="primary" @click="editDialogVisible = false">确 定</el-button>
+    </span>
   </el-dialog>
 
   </div>
@@ -104,21 +128,48 @@
 <script>
 export default {
   data(){
+    // 验证邮箱的规则
+    var checkEmail = (rule, value, cb) => {
+      // 验证邮箱的正则表达式
+      const regEmail = /^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+(\.[a-zA-Z0-9_-])+/
+
+      if (regEmail.test(value)) {  //test方法用于正则校验
+        // 合法的邮箱
+        return cb()
+      }
+
+      cb(new Error('请输入合法的邮箱'))
+    }
+
+    var checkMobile = (rule, value, cb) => {
+      const regMobile = /^(0|86|17951)?(13[0-9]|15[012356789]|17[678]|18[0-9]|14[57])[0-9]{8}$/
+
+      if(regMobile.test(value)) {
+        return cb()
+      }
+
+      cb(new Error('请输入合法的手机号'))
+    }
+
     return {
       queryInfo: {
-        token: 'f79e33e4f78ca48fa022d995cd8b8094',
-        limit: 2,
+        query: '',
+        limit: 20,
         skip: 0
       },
       dataList: [],
       currentPage: 1,
       total: 0,
       dialogVisible: false,
+      editDialogVisible: false,
       addForm: {
         username: '',
         password: '',
         email: '',
         mobile: ''
+      },
+      editForm: {
+
       },
       addFormRules: {
         username: [
@@ -141,13 +192,23 @@ export default {
         ],
         email: [
           { required: true, message: '请输入邮箱', trigger: 'blur' },
-          
+          { validator: checkEmail, trigger: 'blur' }
         ],
         mobile: [
           { required: true, message: '请输入手机号', trigger: 'blur' },
-          
+          { validator: checkMobile, trigger: 'blur' }
         ]
-      }
+      },
+      editFormRules: {
+        email: [
+          { required: true, message: '请输入用户邮箱', trigger: 'blur' },
+          { validator: checkEmail, trigger: 'blur' }
+        ],
+        mobile: [
+          { required: true, message: '请输入用户手机', trigger: 'blur' },
+          { validator: checkMobile, trigger: 'blur' }
+        ]
+      },
     }
   },
   created(){
@@ -155,10 +216,10 @@ export default {
   },
   methods: {
     async getUserList(){
-      const { data: res }= await this.axios.post('/v1/userTrade',this.queryInfo)
+      const { data: res }= await this.axios.post('/v1/userlist',this.queryInfo)
       if(res.errorCode!==1000) return this.$message.error('获取失败')
       res.rows.forEach(element => {
-        element.percent=Boolean(element.percent)
+        element.is_vip=Boolean(element.is_vip)
       });
       this.dataList=res.rows
       this.total=res.count
@@ -179,6 +240,28 @@ export default {
         return this.$message.error('状态修改失败')
       }
       return this.$message.success('状态修改成功')
+    },
+    resetField(){
+      this.$refs.addFormRef.resetFields()  //from表单插件内置函数，重置表单内容为空
+    },
+    addUser(){
+      this.$refs.addFormRef.validate( async valid => {
+        if(!valid) return
+        const {data: res} = await this.axios.post('/v1/register',this.addForm)
+        if(res.errorCode!==1000) return this.$message.error('新增用户失败');
+        this.$message.success('新增用户成功')
+        this.dialogVisible = false;
+        // 重新获取用户列表数据
+        this.getUserList()
+      });
+
+    },
+    async editUserShow(token){
+      
+      const {data:res} = await this.axios.post('/v1/userMsg',{token: token})
+      if(res.errorCode !== 10000) return this.$message.error('查询用户信息失败')
+      this.editForm=res.rows
+      this.editDialogVisible = true
     }
   },
 }
