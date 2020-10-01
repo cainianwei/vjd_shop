@@ -54,7 +54,7 @@
               <!-- 修改按钮 -->
             <el-button type="primary" icon="el-icon-edit" size="mini" @click="editUserShow(scope.row.token)"></el-button>
             <!-- 删除按钮 -->
-            <el-button type="danger" icon="el-icon-delete" size="mini"></el-button>
+            <el-button type="danger" icon="el-icon-delete" size="mini" @click="delUser(scope.row.id)"></el-button>
 
             <el-tooltip effect="dark" content="分配角色" placement="top" :enterable="false">
               <el-button type="warning" icon="el-icon-setting" size="mini"></el-button>
@@ -118,7 +118,7 @@
     </span>
     <span slot="footer" class="dialog-footer">
       <el-button @click="editDialogVisible = false">取 消</el-button>
-      <el-button type="primary" @click="editDialogVisible = false">确 定</el-button>
+      <el-button type="primary" @click="editUser">确 定</el-button>
     </span>
   </el-dialog>
 
@@ -142,7 +142,7 @@ export default {
     }
 
     var checkMobile = (rule, value, cb) => {
-      const regMobile = /^(0|86|17951)?(13[0-9]|15[012356789]|17[678]|18[0-9]|14[57])[0-9]{8}$/
+      const regMobile = /^(0|86|17951)?(13[0-9]|15[012356789]|16[0123456789]|17[678]|18[0-9]|14[57])[0-9]{8}$/
 
       if(regMobile.test(value)) {
         return cb()
@@ -262,6 +262,46 @@ export default {
       if(res.errorCode !== 10000) return this.$message.error('查询用户信息失败')
       this.editForm=res.rows
       this.editDialogVisible = true
+    },
+    editUser(){
+      this.$refs.editFormRef.validate(async valid => {
+        if(!valid) return
+
+        const {data: res} = await this.axios.post('/v1/upUserMsg/'+this.editForm.id,
+        {email: this.editForm.email,mobile: this.editForm.mobile})
+
+        if(res.errorCode!==10000){return this.$message.error('修改失败')}
+
+
+        this.editDialogVisible = false
+
+        this.getUserList()
+
+        this.$message.success('修改')
+      }); 
+    },
+     delUser(id){
+        this.$messagebox.confirm('此操作将永久删除该用户, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(async () => {
+          
+          const {data: res} = await this.axios.post('/v1/upUserMsg/'+id)
+          console.log(res)
+          if(res.errorCode!==10000) return this.$message.error('修改失败')
+
+          this.$message({
+            type: 'success',
+            message: '删除成功!'
+          });
+          this.getUserList()
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消删除'
+          });          
+        });
     }
   },
 }
