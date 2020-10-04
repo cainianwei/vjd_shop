@@ -126,6 +126,7 @@ export default {
     font-size: 10px;
     line-height: 24px;
     letter-spacing: 0.2em; /*设置文字的间距*/
+    cursor: pointer;
     
 }
 

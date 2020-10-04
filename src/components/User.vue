@@ -5,7 +5,7 @@
       <el-breadcrumb-item :to="{ path: '/home' }">首页</el-breadcrumb-item>
       <el-breadcrumb-item>用户</el-breadcrumb-item>
       <el-breadcrumb-item>层级关系</el-breadcrumb-item>
-  </el-breadcrumb>
+    </el-breadcrumb>
 
 <!-- 卡片 -->
   <el-card class="box-card">
