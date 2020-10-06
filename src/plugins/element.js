@@ -1,4 +1,5 @@
 import Vue from 'vue';
+import TreeGrid from 'vue-table-with-tree-grid'
 import { Button,
         Input,
         Form,
@@ -26,7 +27,10 @@ import { Button,
         Dialog,
         MessageBox,
         Tag,
-        Tree, } from 'element-ui';
+        Tree,
+        Select,
+        Option,
+        } from 'element-ui';
 
 Vue.use(Button)
 Vue.use(Input)
@@ -55,6 +59,9 @@ Vue.use(Pagination)
 Vue.use(Dialog)
 Vue.use(Tag)
 Vue.use(Tree)
+Vue.use(Select)
+Vue.use(Option)
 
 Vue.prototype.$message=Message;
 Vue.prototype.$messagebox=MessageBox;
+Vue.component('tree-grid',TreeGrid)

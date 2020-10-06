@@ -64,10 +64,10 @@
     <!-- 分配权限弹窗 -->
         <el-dialog title="分配权限" :visible.sync="setRightDialogVisible" width="50%" @close="setRightDialogClosed">
         <!-- 树形控件 -->
-            <el-tree show-checkbox :data="rightslist" :props="defaultProps" node-key="id" :default-checked-keys="defKeys" default-expand-all></el-tree>
+            <el-tree show-checkbox :data="rightslist" :props="defaultProps" node-key="id" :default-checked-keys="defKeys" default-expand-all ref="treeRef"></el-tree>
             <span slot="footer" class="dialog-footer">
                 <el-button @click="setRightDialogVisible = false">取 消</el-button>
-                <el-button type="primary" @click="setRightDialogVisible = false">确 定</el-button>
+                <el-button type="primary" @click="allotRights">确 定</el-button>
             </span>
         </el-dialog>
   </div>
@@ -84,7 +84,8 @@ export default {
                 children: 'children',
                 label: 'title'
             },
-            defKeys: []
+            defKeys: [],
+            roleId: ''
         }
     },
     created(){
@@ -129,8 +130,9 @@ export default {
 
             if(res.errorCode!==10000) return this.$message.error('获取失败')
             this.rightslist = res.rows
+            this.roleId = roleList.id
             this.getLeafKeys(roleList, this.defKeys)
-            console.log(this.defKeys)
+    
             this.setRightDialogVisible = true
         },
         getLeafKeys(node, arr) {
@@ -144,6 +146,27 @@ export default {
         setRightDialogClosed() {
             this.defKeys = []
         },
+        async allotRights(){
+            const keys = [
+                ...this.$refs.treeRef.getCheckedKeys(),
+                ...this.$refs.treeRef.getHalfCheckedKeys()
+            ]
+
+            const idStr = keys.join(',')
+
+            const { data: res } = await this.axios.post(
+                '/v1/getRoleArr',
+                { rids: idStr }
+            )
+
+            if (res.errorCode !== 10000) {
+                return this.$message.error('分配权限失败！')
+            }
+
+            this.$message.success('分配权限成功！')
+            this.getRoleList()
+            this.setRightDialogVisible = false
+        }
     }
 }
 </script>
