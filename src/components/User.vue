@@ -5,7 +5,7 @@
       <el-breadcrumb-item :to="{ path: '/home' }">首页</el-breadcrumb-item>
       <el-breadcrumb-item>用户</el-breadcrumb-item>
       <el-breadcrumb-item>层级关系</el-breadcrumb-item>
-  </el-breadcrumb>
+    </el-breadcrumb>
 
 <!-- 卡片 -->
   <el-card class="box-card">
@@ -54,10 +54,10 @@
               <!-- 修改按钮 -->
             <el-button type="primary" icon="el-icon-edit" size="mini" @click="editUserShow(scope.row.token)"></el-button>
             <!-- 删除按钮 -->
-            <el-button type="danger" icon="el-icon-delete" size="mini"></el-button>
+            <el-button type="danger" icon="el-icon-delete" size="mini" @click="delUser(scope.row.id)"></el-button>
 
             <el-tooltip effect="dark" content="分配角色" placement="top" :enterable="false">
-              <el-button type="warning" icon="el-icon-setting" size="mini"></el-button>
+              <el-button type="warning" icon="el-icon-setting" size="mini" @click="openRoleDialog(scope.row)"></el-button>
             </el-tooltip>
           </template>
           
@@ -118,10 +118,29 @@
     </span>
     <span slot="footer" class="dialog-footer">
       <el-button @click="editDialogVisible = false">取 消</el-button>
-      <el-button type="primary" @click="editDialogVisible = false">确 定</el-button>
+      <el-button type="primary" @click="editUser">确 定</el-button>
     </span>
   </el-dialog>
 
+<!-- 分配角色对话框 -->
+  <el-dialog title="分配权限" :visible.sync="roleDialogVisible" width="30%" @close="setRoleDialogClosed">
+    <div>
+      <p>用户手机号: {{users.mobile}}</p>
+      <p>邀请码: {{users.invite}}</p>
+      <el-select v-model="selectedRoleId" placeholder="请选择">
+        <el-option
+          v-for="item in rolesList"
+          :key="item.id"
+          :label="item.name"
+          :value="item.id">
+        </el-option>
+    </el-select>
+    </div>
+    <span slot="footer" class="dialog-footer">
+      <el-button @click="roleDialogVisible = false">取 消</el-button>
+      <el-button type="primary" @click="saveRoleInfo">确 定</el-button>
+    </span>
+  </el-dialog>
   </div>
 </template>
 
@@ -142,7 +161,7 @@ export default {
     }
 
     var checkMobile = (rule, value, cb) => {
-      const regMobile = /^(0|86|17951)?(13[0-9]|15[012356789]|17[678]|18[0-9]|14[57])[0-9]{8}$/
+      const regMobile = /^(0|86|17951)?(13[0-9]|15[012356789]|16[0123456789]|17[678]|18[0-9]|14[57])[0-9]{8}$/
 
       if(regMobile.test(value)) {
         return cb()
@@ -209,6 +228,10 @@ export default {
           { validator: checkMobile, trigger: 'blur' }
         ]
       },
+      roleDialogVisible: false,
+      users: {},
+      rolesList: [],
+      selectedRoleId: ''
     }
   },
   created(){
@@ -262,6 +285,72 @@ export default {
       if(res.errorCode !== 10000) return this.$message.error('查询用户信息失败')
       this.editForm=res.rows
       this.editDialogVisible = true
+    },
+    editUser(){
+      this.$refs.editFormRef.validate(async valid => {
+        if(!valid) return
+
+        const {data: res} = await this.axios.post('/v1/upUserMsg/'+this.editForm.id,
+        {email: this.editForm.email,mobile: this.editForm.mobile})
+
+        if(res.errorCode!==10000){return this.$message.error('修改失败')}
+
+
+        this.editDialogVisible = false
+
+        this.getUserList()
+
+        this.$message.success('修改')
+      }); 
+    },
+     delUser(id){
+        this.$messagebox.confirm('此操作将永久删除该用户, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(async () => {
+          
+          const {data: res} = await this.axios.post('/v1/upUserMsg/'+id)
+          console.log(res)
+          if(res.errorCode!==10000) return this.$message.error('修改失败')
+
+          this.$message({
+            type: 'success',
+            message: '删除成功!'
+          });
+          this.getUserList()
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消删除'
+          });          
+        });
+    },
+    async openRoleDialog(users){
+      this.users = users
+      const {data: res} = await this.axios.get('/v1/adminRoles')
+      if(res.errorCode!==10000) return this.$message.error('查询失败')
+      this.rolesList = res.rows
+      this.roleDialogVisible = true
+    },
+    async saveRoleInfo(){
+      if(!this.selectedRoleId) return this.$message.error('请选择要分配的角色')
+      
+      const { data: res } = await this.axios.post(
+        `/v1/getRoleArr`
+      )
+
+      if (res.errorCode !== 10000) {
+        return this.$message.error('更新角色失败！')
+      }
+
+      this.$message.success('更新角色成功！')
+      this.getUserList()
+      this.roleDialogVisible = false
+    },
+    setRoleDialogClosed(){
+      this.selectedRoleId = ''
+      this.users = {}
     }
   },
 }

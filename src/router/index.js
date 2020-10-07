@@ -4,6 +4,9 @@ import Login from '@/components/Login.vue'
 import Home from '@/components/Home.vue'
 import User from '@/components/User.vue'
 import Welcome from '@/components/Welcome'
+import Member from '@/components/member'
+import MemberLevel from '@/components/memberlevel'
+import SetShop from '@/components/setshop'
 
 Vue.use(VueRouter)
 
@@ -36,6 +39,21 @@ const routes = [
         name: 'User',
         component: User
       },
+      {
+        path: '/member',
+        name: 'Member',
+        component: Member
+      },
+      {
+        path: '/memberLevel',
+        name: 'MemberLevel',
+        component: MemberLevel
+      },
+      {
+        path: '/setShop',
+        name: 'SetShop',
+        component: SetShop
+      }
     ]
   }
 ]
