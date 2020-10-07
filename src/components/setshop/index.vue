@@ -133,6 +133,7 @@ export default {
         },
         parentCateChanged(){
            console.log(this.selectedKeys) 
+           
         },
     }
 }
