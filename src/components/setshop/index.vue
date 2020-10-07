@@ -10,11 +10,11 @@
     <el-card class="box-card">
         <el-row :gutter="20">
             <el-col :span="6">
-                <el-button type="primary">添加设置</el-button>
+                <el-button type="primary" @click="setDialogHandel">添加设置</el-button>
             </el-col>
         </el-row>
 
-        <tree-grid :data="dataList" :columns="columns" border :selection-type="false" :expand-type="false" show-index index-text="ID">
+        <tree-grid :data="dataList" :columns="columns" border :selection-type="false" :expand-type="false" show-index index-text="ID" class="tabel-rows">
             <!-- 是否有效 -->
             <template slot="isok" slot-scope=" scope ">
                 <i class="el-icon-success" v-if="scope.row.pid === 0" style="color: lightgreen;"></i>
@@ -34,6 +34,24 @@
         </tree-grid>
 
     </el-card>
+
+    <!-- 添加设置 -->
+    <el-dialog title="添加设置" :visible.sync="setDialogVisible" width="30%" >
+    <el-form :model="setFormData" :rules="setFormDataRule" ref="ruleForm" label-width="100px">
+        <el-form-item label="活动名称" prop="title">
+            <el-input v-model="setFormData.title"></el-input>
+        </el-form-item>
+
+        <el-form-item label="父级分类" prop="title">
+            <el-cascader v-model="selectedKeys" :options="parentCateList" :props="cascaderProps" @change="parentCateChanged" clearable></el-cascader>
+        </el-form-item>
+    </el-form>
+    
+    <span slot="footer" class="dialog-footer">
+        <el-button @click="setDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="setDialogVisible = false">确 定</el-button>
+    </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -67,6 +85,26 @@ export default {
                     template: 'opt'
                 }
             ],
+            setDialogVisible: false,
+            setFormData: {
+                title: '',
+                pid: 0,
+
+            },
+            setFormDataRule: {
+                title: [
+                    { required: true, message: '请输入设置名称', trigger: 'blur' }
+                ]
+            },
+            parentCateList: [],
+            cascaderProps: {
+                value: 'id',
+                label: 'title',
+                children: 'children',
+                expandTrigger: 'hover',
+                checkStrictly: true
+            },
+            selectedKeys: [],
             total: 100,
         }
     },
@@ -81,12 +119,26 @@ export default {
 
             this.$message.success('获取成功')
             this.dataList = res.rows
-            console.log(this.dataList)
-        }
+            
+        },
+        setDialogHandel(){
+            this.getParentList()
+            this.setDialogVisible = true;
+        },
+        async getParentList(){
+            const {data:res} = await this.axios.post('/v1/getRoleArr')
+            if(res.errorCode !== 10000) return this.$message.error('获取失败')
+            this.parentCateList = res.rows
+
+        },
+        parentCateChanged(){
+           console.log(this.selectedKeys) 
+        },
     }
 }
 </script>
 
-<style>
-
+<style lang="less" scoped>
+.tabel-rows {margin-top: 15px;}
+.el-cascader {width: 100%;}
 </style>
