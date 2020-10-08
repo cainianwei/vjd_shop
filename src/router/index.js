@@ -7,6 +7,7 @@ import Welcome from '@/components/Welcome'
 import Member from '@/components/member'
 import MemberLevel from '@/components/memberlevel'
 import SetShop from '@/components/setshop'
+import ProfitPercent from '@/components/setshop/ProfitPercent'
 
 Vue.use(VueRouter)
 
@@ -53,6 +54,11 @@ const routes = [
         path: '/setShop',
         name: 'SetShop',
         component: SetShop
+      },
+      {
+        path: '/profitPrcent',
+        name: 'ProfitPrcent',
+        component: ProfitPercent
       }
     ]
   }

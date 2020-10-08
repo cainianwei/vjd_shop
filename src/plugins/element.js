@@ -31,7 +31,9 @@ import { Button,
         Select,
         Option,
         Cascader,
-        } from 'element-ui';
+        Alert,
+        Tabs,
+        TabPane,} from 'element-ui';
 
 Vue.use(Button)
 Vue.use(Input)
@@ -63,6 +65,9 @@ Vue.use(Tree)
 Vue.use(Select)
 Vue.use(Option)
 Vue.use(Cascader)
+Vue.use(Alert)
+Vue.use(Tabs)
+Vue.use(TabPane)
 
 Vue.prototype.$message=Message;
 Vue.prototype.$messagebox=MessageBox;
