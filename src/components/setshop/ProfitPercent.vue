@@ -24,6 +24,16 @@
                     <el-button type="primary" size="mini" :disabled="isBtnDisabled" @click="addDialogVisible = true">添加参数</el-button>
 
                     <el-table :data="firstTableData" border stripe style="width: 100%">
+                        <el-table-column type="expand">
+                            <template slot-scope=" scope ">
+                                <el-tag v-for="(item,i) in scope.row.sot_msg" :key="i" closable @close="handleClose(i, scope.row)" type="success">
+                                    {{item}}
+                                </el-tag>
+                                <el-input class="input-new-tag" v-if="scope.row.inputVisible" v-model="scope.row.inputValue" ref="saveTagInput" size="small" @keyup.enter.native="handleInputConfirm(scope.row)" @blur="handleInputConfirm(scope.row)">
+                                </el-input>
+                                <el-button v-else class="button-new-tag" size="small" @click="showInput(scope.row)">+ New Tag</el-button>
+                            </template>
+                        </el-table-column>
                         <el-table-column prop="name" label="名称" >
                         </el-table-column>
                         <el-table-column prop="default_module" label="简介" >
@@ -40,6 +50,7 @@
                     <el-button type="primary" size="mini" :disabled="isBtnDisabled" @click="addDialogVisible = true">添加属性</el-button>
 
                     <el-table :data="secondTableData" border stripe style="width: 100%">
+                        <el-table-column type="expand"></el-table-column>
                         <el-table-column prop="name" label="名称" >
                         </el-table-column>
                         <el-table-column prop="default_module" label="简介" >
@@ -116,12 +127,19 @@ export default {
         async getMenudata(){
             if (this.selectedKeys.length !== 3) {
                 this.selectedKeys = []
+                this.firstTableData = []
+                this.secondTableData = []
                 return
             }
 
             const {data: res} = await this.axios.get('/v1/adminRoles')
             if(res.errorCode !== 10000) return this.$message.error('获取失败')
-            
+            res.rows.forEach(item => {
+                item.sot_msg = item.sot_msg ? item.sot_msg.split(',') : []
+                item.inputVisible = false
+                // 文本框中输入的值
+                item.inputValue = ''
+            })
             if(this.activeName === 'first'){
                 this.firstTableData = res.rows
                 
@@ -145,6 +163,29 @@ export default {
                 this.addDialogVisible = false
                 this.getMenuList()
             })
+        },
+        showInput(row){
+            row.inputVisible = true
+            // $nextTick 方法的作用，就是当页面上元素被重新渲染之后，才会指定回调函数中的代码
+            this.$nextTick(_ => {
+                console.log(_)
+                this.$refs.saveTagInput.$refs.input.focus()
+            })
+
+        },
+        handleInputConfirm(row){
+            if(row.inputValue.trim().length === 0){
+                row.inputValue = ''
+                row.inputVisible = false
+                return
+            }
+            row.sot_msg.push(row.inputValue.trim())
+            row.inputValue = ''
+            row.inputVisible = false
+        },
+        handleClose(i, row) {
+            row.sot_msg.splice(i, 1)
+            // this.saveAttrVals(row)
         }
         
     },
@@ -167,6 +208,8 @@ export default {
 }
 </script>
 
-<style>
-
+<style lang="less" scoped>
+.input-new-tag {
+    width: 120px;
+}
 </style>
