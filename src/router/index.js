@@ -8,6 +8,7 @@ import Member from '@/components/member'
 import MemberLevel from '@/components/memberlevel'
 import SetShop from '@/components/setshop'
 import ProfitPercent from '@/components/setshop/ProfitPercent'
+import OrderCompute from '@/components/datacount/OrderCompute'
 
 Vue.use(VueRouter)
 
@@ -59,6 +60,11 @@ const routes = [
         path: '/profitPrcent',
         name: 'ProfitPrcent',
         component: ProfitPercent
+      },
+      {
+        path: '/orderCompute',
+        name: 'OrderCompute',
+        component: OrderCompute
       }
     ]
   }
