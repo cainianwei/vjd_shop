@@ -17,7 +17,7 @@
                     </div>
                 </el-col>
                 <el-col :span="6">
-                    <el-button type="primary">添加商品</el-button>
+                    <el-button type="primary" @click="addCompute">添加商品</el-button>
                 </el-col>    
             </el-row>
             <!-- 表格 -->
@@ -90,6 +90,9 @@ export default {
         handleCurrentChange(nowPage){
             this.queryMsg.skip = (nowPage-1)*this.queryMsg.limit
             this.getDataList()
+        },
+        addCompute(){
+            this.$router.push('/addCompute')
         }
     },
     
