@@ -47,11 +47,25 @@
                             <el-input v-model="item.description" ></el-input>
                         </el-form-item>
                     </el-tab-pane>
-                    <el-tab-pane label="商品图片" name="3">定时任务补偿</el-tab-pane>
+                    <el-tab-pane label="商品图片" name="3">
+                        <el-upload class="upload-demo" :action="actionUrl" :on-preview="handlePreview" 
+                        :on-remove="handleRemove" list-type="picture" name="img" :on-success="handelToSuccess">
+                        <el-button size="small" type="primary">点击上传</el-button>
+                        <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
+                        </el-upload>
+                    </el-tab-pane>
                     <el-tab-pane label="商品内容" name="4">定时任务补偿</el-tab-pane>
                 </el-tabs>
             </el-form>
         </el-card>
+
+        <!-- 缩略图 -->
+        <el-dialog
+        title="缩略图"
+        :visible.sync="previewVisible"
+        width="50%">
+        <img :src="previewImg" alt="" class="upImg">
+        </el-dialog>
     </div>
 </template>
 
@@ -65,7 +79,8 @@ export default {
                 goods_price: 0,
                 goods_weight: 0,
                 goods_number: 0,
-                goods_cat: []
+                goods_cat: [],
+                goods_pic: [],
             },
             addFormRules: {
                 goods_name: [
@@ -93,7 +108,10 @@ export default {
                 checkStrictly:true 
             },
             checkList: [],
-            attrList: []
+            attrList: [],
+            actionUrl: 'http://localhost:8080/v1/upimg',
+            previewImg: '',
+            previewVisible: false
         }
     },
     created(){
@@ -129,7 +147,29 @@ export default {
                 this.attrList = res.rows
                 console.log(this.attrList)
             }
+        },
+        handlePreview(file){
+            this.previewImg = 'http://wjym.didizy.com/'+file.response.rows.img_url
+            console.log(this.previewImg)
+            this.previewVisible = true
+
+        },
+        handleRemove(file){
+             // 1. 获取将要删除的图片的临时路径
+             const filePath = file.response.rows.img_url
+             //查找匹配的数组位置
+             const i = this.addForm.goods_pic.findIndex(x => x.img===filePath) //es6简写  相当于 function（x）{x.img===filePath}
+             //删除数组里的元素
+             this.addForm.goods_pic.splice(i,1)
+             
+             console.log(this.addForm)
+        },
+        handelToSuccess(response){
+            const imgInfo = {img: response.rows.img_url}
+            this.addForm.goods_pic.push(imgInfo)
+            
         }
+
     },
     computed: {
         cateId(){
@@ -153,5 +193,9 @@ export default {
 
 .el-form-item {
     width: 400px;
+}
+
+.upImg {
+    width: 100%;
 }
 </style>

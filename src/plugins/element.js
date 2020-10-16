@@ -36,7 +36,9 @@ import { Button,
         TabPane,
         Steps,
         Step,
-        Checkbox,} from 'element-ui';
+        Checkbox,
+        Upload,} from 'element-ui';
+
 
 Vue.use(Button)
 Vue.use(Input)
@@ -74,6 +76,7 @@ Vue.use(TabPane)
 Vue.use(Steps)
 Vue.use(Step)
 Vue.use(Checkbox)
+Vue.use(Upload)
 Vue.prototype.$message=Message;
 Vue.prototype.$messagebox=MessageBox;
 Vue.component('tree-grid',TreeGrid)
