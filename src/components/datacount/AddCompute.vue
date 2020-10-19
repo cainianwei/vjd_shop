@@ -54,7 +54,21 @@
                         <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
                         </el-upload>
                     </el-tab-pane>
-                    <el-tab-pane label="商品内容" name="4">定时任务补偿</el-tab-pane>
+                    <el-tab-pane label="商品内容" name="4">          <!--由于富文本图片是二进制文件，解决后端对接的逻辑，做一个隐藏的图片上传按钮先将图片上传到服务器再从服务器获取图片地址替换到现有的光标地址-->
+                        <el-upload class="ivu-upload"
+                        :show-upload-list="false"
+                        :on-success="handleSuccess"
+                        :format="['jpg','jpeg','png','gif']"
+                        :max-size="2048"
+                        multiple
+                        :action="actionUrl"
+                        >
+                            <el-button icon="ios-cloud-upload-outline" class="ivu-btn"></el-button>
+                        </el-upload>
+                        <quill-editor v-model="addForm.goods_introduce" :options="editorOption" ref="QuillEditor">
+                        </quill-editor>
+                        <el-button type="primary" class="btnAdd" @click="add">添加商品</el-button>
+                    </el-tab-pane>
                 </el-tabs>
             </el-form>
         </el-card>
@@ -70,6 +84,29 @@
 </template>
 
 <script>
+import _ from 'lodash'
+
+const toolbarOptions = [
+      ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
+      ['blockquote', 'code-block'],
+    
+      [{'header': 1}, {'header': 2}],               // custom button values
+      [{'list': 'ordered'}, {'list': 'bullet'}],
+      [{'script': 'sub'}, {'script': 'super'}],      // superscript/subscript
+      [{'indent': '-1'}, {'indent': '+1'}],          // outdent/indent
+      [{'direction': 'rtl'}],                         // text direction
+    
+      [{'size': ['small', false, 'large', 'huge']}],  // custom dropdown
+      [{'header': [1, 2, 3, 4, 5, 6, false]}],
+    
+      [{'color': []}, {'background': []}],          // dropdown with defaults from theme
+      [{'font': []}],
+      [{'align': []}],
+      ['link', 'image', 'video'],
+      ['clean']                                         // remove formatting button
+    ]
+
+
 export default {
     data(){
         return {
@@ -81,6 +118,7 @@ export default {
                 goods_number: 0,
                 goods_cat: [],
                 goods_pic: [],
+                goods_introduce: '',
             },
             addFormRules: {
                 goods_name: [
@@ -111,7 +149,23 @@ export default {
             attrList: [],
             actionUrl: 'http://localhost:8080/v1/upimg',
             previewImg: '',
-            previewVisible: false
+            previewVisible: false,
+            editorOption: {                
+                    modules: {
+                        toolbar: {
+                            container: toolbarOptions,  // 工具栏
+                            handlers: {
+                                'image': function (value) {
+                                    if (value) {
+                                        document.querySelector('.ivu-upload .ivu-btn').click()
+                                    } else {
+                                        this.quill.format('image', false);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
         }
     },
     created(){
@@ -168,7 +222,59 @@ export default {
             const imgInfo = {img: response.rows.img_url}
             this.addForm.goods_pic.push(imgInfo)
             
+        },
+        add(){
+            this.$refs.addFormRef.validate(async vaild =>{
+                if (!valid) {
+                    return this.$message.error('请填写必要的表单项！')
+                }
+
+                const form = _.cloneDeep(this.addForm)
+                form.goods_cat = form.goods_cat.join(',')
+                
+                // 处理动态参数
+                this.checkList.forEach(item => {
+                    const newInfo = {
+                        attr_id: item.attr_id,
+                        attr_value: item.attr_vals.join(' ')
+                    }
+                    this.addForm.attrs.push(newInfo)
+                })
+                // 处理静态属性
+                this.attrList.forEach(item => {
+                    const newInfo = { attr_id: item.attr_id, attr_value: item.attr_vals }
+                        this.addForm.attrs.push(newInfo)
+                    })
+                    form.attrs = this.addForm.attrs
+
+                    // 发起请求添加商品
+                // 商品的名称，必须是唯一的
+                const { data: res } = await this.$http.post('goods', form)
+
+                if (res.meta.status !== 201) {
+                    return this.$message.error('添加商品失败！')
+                }
+
+                this.$message.success('添加商品成功！')
+                this.$router.push('/goods')
+                })    
+        },
+        handleSuccess (res) {
+        // 获取富文本组件实例
+        let quill = this.$refs.QuillEditor.quill
+        // 如果上传成功
+        if (res) {
+            // 获取光标所在位置
+            let length = quill.getSelection().index;
+            // 插入图片，res为服务器返回的图片链接地址
+            quill.insertEmbed(length, 'image', res)
+            // 调整光标到最后
+            quill.setSelection(length + 1)
+        } else {
+            // 提示信息，需引入Message
+            Message.error('图片插入失败')
         }
+    },
 
     },
     computed: {
@@ -183,6 +289,9 @@ export default {
 </script>
 
 <style lang="less" scoped>
+.el-card {
+    height: 100%;
+}
 .el-steps {
     margin-top: 20px;
 }
@@ -197,5 +306,15 @@ export default {
 
 .upImg {
     width: 100%;
+}
+
+.addBtn {
+    margin-top: 15px;
+}
+
+.btnAdd {margin-top: 15px;}
+
+.ivu-upload {
+    display: none;
 }
 </style>
