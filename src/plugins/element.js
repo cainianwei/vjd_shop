@@ -37,7 +37,9 @@ import { Button,
         Steps,
         Step,
         Checkbox,
-        Upload,} from 'element-ui';
+        Upload,
+        Timeline,
+        TimelineItem,} from 'element-ui';
 
 
 Vue.use(Button)
@@ -77,6 +79,8 @@ Vue.use(Steps)
 Vue.use(Step)
 Vue.use(Checkbox)
 Vue.use(Upload)
+Vue.use(Timeline)
+Vue.use(TimelineItem)
 Vue.prototype.$message=Message;
 Vue.prototype.$messagebox=MessageBox;
 Vue.component('tree-grid',TreeGrid)

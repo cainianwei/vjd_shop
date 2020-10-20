@@ -10,6 +10,7 @@ import SetShop from '@/components/setshop'
 import ProfitPercent from '@/components/setshop/ProfitPercent'
 import OrderCompute from '@/components/datacount/OrderCompute'
 import AddCompute from '@/components/datacount/AddCompute'
+import ProfitCompute from '@/components/profitcompute'
 
 Vue.use(VueRouter)
 
@@ -71,6 +72,11 @@ const routes = [
         path: '/addCompute',
         name: 'AddCompute',
         component: AddCompute
+      },
+      {
+        path: '/profitCompute',
+        name: 'ProfitCompute',
+        component: ProfitCompute
       }
     ]
   }

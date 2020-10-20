@@ -225,7 +225,7 @@ export default {
         },
         add(){
             this.$refs.addFormRef.validate(async vaild =>{
-                if (!valid) {
+                if (!vaild) {
                     return this.$message.error('请填写必要的表单项！')
                 }
 
